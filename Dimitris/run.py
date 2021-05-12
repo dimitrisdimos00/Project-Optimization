@@ -16,7 +16,8 @@ from Operations import operations
 # print(dv.q)
 # dv.printDesignVector()
 
-pop = population(10, -5, 10, 0.1)
+pop = population()
+pop.initializePopulation(10, -5, 10, 0.1)
 op = operations(pop)
 op.print()
 

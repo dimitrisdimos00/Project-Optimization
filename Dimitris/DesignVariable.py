@@ -2,16 +2,19 @@ import numpy as np
 import random
 
 class designVec:
-    def __init__(self, minValue, maxValue, dx):
-        self.min = minValue
-        self.max = maxValue
-        
-        self.q = int(np.ceil( np.log2( (maxValue - minValue) / dx + 1 ) ))
+    def __init__(self):
+       pass
+    
+    def initialize(self, min, max, dx):
+        self.q = int(np.ceil( np.log2( (max - min) / dx + 1 ) ))
+        self.value_bin = self.generateBinary(self.q, min, max)
+        self.value_dec = self.convertToDecimal(self.q, min, max, self.value_bin)
 
-        self.value_bin = self.generateBinary(self.q, self.min, self.max)
-        self.value_dec = self.convertToDecimal(self.q, self.min, self.max, self.value_bin)
+    def setValue(self, bin_value, min, max, dx):
+        self.q = int(np.ceil( np.log2( (max - min) / dx + 1 ) ))
+        self.value_bin = bin_value
+        self.value_dec = self.convertToDecimal(self.q, min, max, self.value_bin)
         
-
     def generateBinary(self, q, min, max):
         
         bin_array = np.zeros(q, dtype='int') 
