@@ -125,6 +125,20 @@ class operations:
         # mates is a list
         length = len(mates)
         new_design_vectors = [None] * length
+        
+        # check if the length is odd. In that case, the last element in 
+        # the mating pool is going to pass directly to the next generation
+        if length % 2 == 1:
+            bin_value = mates[length - 1].value_bin
+            bin_value = self.singlePointMutation(bin_value, pm)
+            
+            dv = designVec(self.min, self.max, self.dx)
+            dv.setValue(bin_value, self.min, self.max, self.dx)
+            
+            new_design_vectors[length - 1] = dv
+            
+            length -= 1
+        
         for i in range(0, length, 2):
             # select parents
             parent1 = mates[i]
