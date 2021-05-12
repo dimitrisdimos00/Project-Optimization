@@ -4,18 +4,7 @@ import random
 
 # a class that stores a population of design vectors and the population size
 class population:
-    def __init__(self):
-        pass
-
-    def getAllDesignVectors(self):
-        return self.all_design_vectors
-    def getPopulationSize(self):
-        return self.pop_size
-    def setAllDesignVectors(self, dvlist):
-        self.all_design_vectors = dvlist
-        self.pop_size = len(dvlist)
-
-    def initializePopulation(self, population_size, min_value, max_value, dx):
+    def __init__(self, population_size, min_value, max_value, dx):
         all_des_vec = [None] * population_size
         for i in range(population_size):
             dv1 = designVec(min_value, max_value, dx)
@@ -24,6 +13,11 @@ class population:
             all_des_vec[i] = dv1
         self.all_design_vectors = all_des_vec
         self.pop_size = population_size
+
+    def setAllDesignVectors(self, dvlist):
+        self.all_design_vectors = dvlist
+        self.pop_size = len(dvlist)
+
 
     def printPopulation(self):
         counter = 1

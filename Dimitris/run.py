@@ -3,23 +3,18 @@ from DesignVariable import designVec
 from Population import population
 from Operations import operations
 
-# pop = population(10, 10, -50, 50)
-# pop.initializePopulation()
-# sim = operations(pop)
 
-# sim.print()
 
-# dv = designVec(0.1, 6, 10)
-
-# # for i in range(1):
-#     # print(dv.value_bin)
-# print(dv.q)
-# dv.printDesignVector()
-
-pop = population()
-pop.initializePopulation(10, -5, 10, 0.1)
-op = operations(pop)
+op = operations(10, -5, 10, 0.01)
+print("---------------------POPULATION 1: ---------------------")
 op.print()
 
-# dv = designVec(-5, 10, 0.1)
-# print(dv.value_dec)
+for i in range(5):
+    new_pop = op.calculateNewPopulation(op.mates, 0.2)
+    op.setOperations(new_pop)
+    txt = "---------------------POPULATION {pop_no:d}: ---------------------".format(pop_no = i + 2)
+    print(txt)
+    op.print()
+# op.setOperations(new_pop)
+# op.print()
+
