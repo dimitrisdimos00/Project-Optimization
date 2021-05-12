@@ -5,7 +5,7 @@ from Operations import operations
 
 
 
-op = operations(10, -5, 10, 0.01)
+op = operations(7, -5, 10, 0.01)
 print("---------------------POPULATION 1: ---------------------")
 op.print()
 
