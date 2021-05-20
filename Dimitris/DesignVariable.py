@@ -44,6 +44,6 @@ class designVec:
 
     def printDesignVector(self):
         print("decimal value: ", self.value_dec)
-        print("binary value: ", self.value_bin)
+        # print("binary value: ", self.value_bin)
             
 

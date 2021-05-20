@@ -5,32 +5,21 @@ from Population import population
 def f(x):
     return x**2
 
+def ackley(x, y):
+    return -20 * np.exp( -0.2 * np.sqrt( 0.5 * (x ** 2 + y ** 2))) - np.exp( 0.5 * (np.cos(2 * np.pi * x) + np.cos(2 * np.pi * y))) + np.exp(1) + 20
+    
+
 class operations:
-    def __init__(self, pop_size, min, max, dx): 
-        self.population = population(pop_size, min, max, dx)
-        self.designVectors = self.population.all_design_vectors
-        self.max = max
-        self.min = min
-        self.dx = dx
-        
-        self.n = pop_size
-
-        self.fitness_values = self.evaluate()
-        self.sum_of_fvalues = self.calculateSumOfFvals()
-        self.averageOfFvals = self.sum_of_fvalues * (1 / self.n)
-
-        self.probabilities_of_selection = self.findProbabilitiesOfSelection()
-        self.cummulative_probabilities = self.findCummulativeProbabilities()
-
-        self.mates, self.matesNo = self.findMates(self.designVectors, self.cummulative_probabilities)
-
-    def setOperations(self, population):
+    def __init__(self, population): 
         self.population = population
         self.designVectors = population.all_design_vectors
-        self.max = self.designVectors[0].max_value
-        self.min = self.designVectors[0].min_value
-        self.dx = self.designVectors[0].dx
-        self.n = self.population.pop_size
+        self.max_d1 = population.max_value_d1
+        self.min_d1 = population.min_value_d1
+        self.max_d2 = population.max_value_d2
+        self.min_d2 = population.min_value_d2
+        self.dx = population.dx
+        
+        self.n = population.pop_size
 
         self.fitness_values = self.evaluate()
         self.sum_of_fvalues = self.calculateSumOfFvals()
@@ -40,12 +29,11 @@ class operations:
         self.cummulative_probabilities = self.findCummulativeProbabilities()
 
         self.mates, self.matesNo = self.findMates(self.designVectors, self.cummulative_probabilities)
-
 
     def evaluate(self):
         eval_value = []
-        for dv in self.population.all_design_vectors:
-            fitness_value = 1 / (1 + f(dv.value_dec)) # find the fitness value 
+        for vector2d in self.population.all_design_vectors:
+            fitness_value = 1 / (1 + ackley(vector2d[0].value_dec, vector2d[1].value_dec)) # find the fitness value 
             eval_value.append(fitness_value)
         return eval_value
     
@@ -92,6 +80,7 @@ class operations:
 
         return selectedMates, selectedMatesIndex
 
+    # no need to change despite the dimensions of the design vectors
     def singlePointMutation(self, bin_value, pm):
         
         prob_mutation_sucess = random.uniform(0, 1)
@@ -104,7 +93,8 @@ class operations:
             else:
                 bin_value[site] = 1
         return bin_value
-
+    
+    # no need to change despite the dimensions of the design vectors
     def crossover(self, bin_value1, bin_value2):
         q = bin_value1.size
         site = random.randint(0, q - 2)
@@ -121,57 +111,109 @@ class operations:
         
         return offspring1, offspring2
 
-    def calculateNewPopulation(self, mates, pm): 
-        # mates is a list
+    def calculateNewPopulation(self, mates, pm, pc): 
+        max_d1 = self.max_d1
+        min_d1 = self.min_d1
+        max_d2 = self.max_d2
+        min_d2 = self.min_d2
+        dx = self.dx
+
+        # mates is a list of 2d vectors
         length = len(mates)
+
+        # initialize the new 2d vectors' list
         new_design_vectors = [None] * length
+
+        parent1_found = False
+        parent2_found = False
+        parent1_position = 0
+        parent2_position = 0
+
+        for k in range(len(mates)):
+            prob_crossover_sucess = random.uniform(0, 1)
+            
+            if prob_crossover_sucess <= pc:
+                if not parent1_found:
+                    parent1 = mates[k]
+                    parent1_position = k
+                    parent1_found = True
+                elif not parent2_found:
+                    parent2 = mates[k]
+                    parent2_position = k
+                    parent2_found = True
+            new_design_vectors[k] = mates[k]
+                
+
+            if parent1_found and parent2_found:
+                p1valb0 = parent1[0].value_bin
+                p1valb1 = parent1[1].value_bin
+                bin_array1 = np.concatenate((parent1[0].value_bin, parent1[1].value_bin), axis = None)
+                bin_array2 = np.concatenate((parent2[0].value_bin, parent2[1].value_bin), axis = None)
+
+                offspring1, offspring2 = self.crossover(bin_array1, bin_array2)
+
+                # divide the new binary arrays into two equally sized arrays
+                bin_array_1_offspring_1, bin_array_2_offspring_1 = np.split(offspring1, 2)
+                bin_array_1_offspring_2, bin_array_2_offspring_2 = np.split(offspring2, 2)
+                
+                # set the new design vectors in a list
+                # offspring 1:
+                dv1_offspring1 = designVec(min_d1, max_d1, dx)
+                dv1_offspring1.setValue(bin_array_1_offspring_1, min_d1, max_d1, dx)
+
+                dv2_offspring1 = designVec(min_d2, max_d2, dx)
+                dv2_offspring1.setValue(bin_array_2_offspring_1, min_d2, max_d2, dx)
+
+                # offspring 2:
+                dv1_offspring2 = designVec(min_d1, max_d1, dx)
+                dv1_offspring2.setValue(bin_array_1_offspring_2, min_d1, max_d1, dx)
+
+                dv2_offspring2 = designVec(min_d2, max_d2, dx)
+                dv2_offspring2.setValue(bin_array_2_offspring_2, min_d2, max_d2, dx)
+            
+                # create the new 2d vector for each offspring
+                offspring2d_1 = (dv1_offspring1, dv2_offspring1)
+                offspring2d_2 = (dv1_offspring2, dv2_offspring2)
+
+                # pass the new offspring vector inside the new list
+                new_design_vectors[parent1_position] = offspring2d_1
+                new_design_vectors[parent2_position] = offspring2d_2
+                
+                parent1_found = False
+                parent2_found = False
         
-        # check if the length is odd. In that case, the last element in 
-        # the mating pool is going to pass directly to the next generation
-        if length % 2 == 1:
-            bin_value = mates[length - 1].value_bin
+        # calculate the mutation for each vector
+        for k in range(len(new_design_vectors)):
+            vector2d = new_design_vectors[k]
+            
+            bin_value = np.concatenate((new_design_vectors[k][0].value_bin, new_design_vectors[k][1].value_bin), axis = None)
             bin_value = self.singlePointMutation(bin_value, pm)
-            
-            dv = designVec(self.min, self.max, self.dx)
-            dv.setValue(bin_value, self.min, self.max, self.dx)
-            
-            new_design_vectors[length - 1] = dv
-            
-            length -= 1
-        
-        for i in range(0, length, 2):
-            # select parents
-            parent1 = mates[i]
-            parent2 = mates[i + 1]
-            
-            # calculate crossover
-            offspring1, offspring2 = self.crossover(parent1.value_bin, parent2.value_bin)
+            # split the result into 2 equal size arrays
+            bin_value1, bin_value2 = np.split(bin_value, 2)
 
-            # calculate mutations
-            offspring1 = self.singlePointMutation(offspring1, pm)
-            offspring2 = self.singlePointMutation(offspring2, pm)
+            # create 2 new design vectors with the new values
+            dv1 = designVec(min_d1, max_d1, dx)
+            dv1.setValue(bin_value1, min_d1, max_d1, dx)
 
-            # set the new design vectors in a list
-            dv1 = designVec(self.min, self.max, self.dx)
-            dv1.setValue(offspring1, self.min, self.max, self.dx)
-            dv2 = designVec(self.min, self.max, self.dx)
-            dv2.setValue(offspring2, self.min, self.max, self.dx)
-            new_design_vectors[i] = dv1
-            new_design_vectors[i + 1] = dv2
-        
+            dv2 = designVec(min_d2, max_d2, dx)
+            dv2.setValue(bin_value2, min_d2, max_d2, dx)
+
+            # create a new 2d vector as a tuple
+            vector2d = (dv1, dv2)
+            new_design_vectors[k] = vector2d
+
         # create a new population from the new design vector list
-        new_population = population(self.n, self.min, self.max, self.dx)
+        new_population = population(self.n, min_d1, max_d1, min_d2, max_d2, dx)
         new_population.setAllDesignVectors(new_design_vectors)
         return new_population
 
-
     def print(self):
-        self.population.printPopulation()
+        # self.population.printPopulation()
         # print("\n Fitness Values: ")
         # print(self.fitness_values)
 
-        print("\n Probability of selection: ")
-        print(self.probabilities_of_selection)
+        # print("\n Probability of selection: ")
+        # print(self.probabilities_of_selection)
 
         # print("\n Cummulative probabilities: ")
         # print(self.cummulative_probabilities)
@@ -179,10 +221,11 @@ class operations:
         print("\n Average of fitness values: ")
         print(self.averageOfFvals)
 
-        print("\n Selected Mates: ")
-        n = len(self.mates)
-        for i in range(n):
-            print("no. ", self.matesNo[i])
-            print(self.mates[i].printDesignVector())
+        # print("\n Selected Mates: ")
+        # n = len(self.mates)
+        # for i in range(n):
+        #     print("no. ", self.matesNo[i])
+        #     print(self.mates[i][0].printDesignVector())
+        #     print(self.mates[i][1].printDesignVector())
 
 
