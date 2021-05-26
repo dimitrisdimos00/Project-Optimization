@@ -2,11 +2,11 @@ from DesignVariable import designVec
 import numpy as np
 import random
 
-# a class that stores a population of design vectors and the population size
+# a class that stores a population of 2d design vectors and the population size
 class population:
     def __init__(self, population_size, min_value_d1, max_value_d1, min_value_d2, max_value_d2, dx):
-        all_des_vec = [None] * population_size
-
+        all_des_vec = [None] * population_size # creating empty list
+ 
         self.max_value_d1 = max_value_d1
         self.min_value_d1 = min_value_d1
         self.max_value_d2 = max_value_d2

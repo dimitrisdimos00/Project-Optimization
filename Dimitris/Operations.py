@@ -2,13 +2,18 @@ import numpy as np
 import random
 from DesignVariable import designVec
 from Population import population
-def f(x):
-    return x**2
 
+# rastrigin search domain: -5.12 <= x, y <= 5.12
+def rastrigin(x, y):
+    return 20 + x**2 - 10*np.cos(2*np.pi*x) + y**2 - 10*np.cos(2*np.pi*y)
+# ackley search domain: -5 <= x, y <= 5
 def ackley(x, y):
     return -20 * np.exp( -0.2 * np.sqrt( 0.5 * (x ** 2 + y ** 2))) - np.exp( 0.5 * (np.cos(2 * np.pi * x) + np.cos(2 * np.pi * y))) + np.exp(1) + 20
+# sphere search domain: -inf <= xi <= +inf
+def sphere(x, y):
+    return x**2 + y**2
     
-
+# a class that performs all the necessary operations for the genetic algorithm
 class operations:
     def __init__(self, population): 
         self.population = population
@@ -33,7 +38,8 @@ class operations:
     def evaluate(self):
         eval_value = []
         for vector2d in self.population.all_design_vectors:
-            fitness_value = 1 / (1 + ackley(vector2d[0].value_dec, vector2d[1].value_dec)) # find the fitness value 
+            # find the fitness value F(x) = 1 / (1 + f(x))
+            fitness_value = 1 / (1 + sphere(vector2d[0].value_dec, vector2d[1].value_dec)) 
             eval_value.append(fitness_value)
         return eval_value
     
@@ -70,7 +76,7 @@ class operations:
         for j in range(n):
             r = random.uniform(0,1)
             selectedIndex = 0
-            # find the index of the element to be selected
+            # find the index of the element to be selected with roulette method
             for i in range(1, n):
                 if r > cumProb[i - 1] and r <= cumProb[i]:
                     selectedIndex = i
@@ -80,7 +86,7 @@ class operations:
 
         return selectedMates, selectedMatesIndex
 
-    # no need to change despite the dimensions of the design vectors
+    # calcultae the mutation on the given binary string with probability of mutation pm
     def singlePointMutation(self, bin_value, pm):
         
         prob_mutation_sucess = random.uniform(0, 1)
@@ -94,7 +100,7 @@ class operations:
                 bin_value[site] = 1
         return bin_value
     
-    # no need to change despite the dimensions of the design vectors
+    # caclulate the crossover in the given binary strings
     def crossover(self, bin_value1, bin_value2):
         q = bin_value1.size
         site = random.randint(0, q - 2)
@@ -111,6 +117,8 @@ class operations:
         
         return offspring1, offspring2
 
+    # in this function the new population is calculated given the 
+    # probability of mutation pm and the probability of crossover pc
     def calculateNewPopulation(self, mates, pm, pc): 
         max_d1 = self.max_d1
         min_d1 = self.min_d1
@@ -131,7 +139,8 @@ class operations:
 
         for k in range(len(mates)):
             prob_crossover_sucess = random.uniform(0, 1)
-            
+            # if the probability of crossover is achieved, select parent1 and parent2
+            # and save them as well as their positions    
             if prob_crossover_sucess <= pc:
                 if not parent1_found:
                     parent1 = mates[k]
@@ -143,7 +152,8 @@ class operations:
                     parent2_found = True
             new_design_vectors[k] = mates[k]
                 
-
+            # below is a series of concatenations and splits for the crossover to 
+            # be calculated, given that the two parents are found
             if parent1_found and parent2_found:
                 p1valb0 = parent1[0].value_bin
                 p1valb1 = parent1[1].value_bin
@@ -179,6 +189,7 @@ class operations:
                 new_design_vectors[parent1_position] = offspring2d_1
                 new_design_vectors[parent2_position] = offspring2d_2
                 
+                # set the booleans back to false
                 parent1_found = False
                 parent2_found = False
         
@@ -186,7 +197,7 @@ class operations:
         for k in range(len(new_design_vectors)):
             vector2d = new_design_vectors[k]
             
-            bin_value = np.concatenate((new_design_vectors[k][0].value_bin, new_design_vectors[k][1].value_bin), axis = None)
+            bin_value = np.concatenate((vector2d[0].value_bin, vector2d[1].value_bin), axis = None)
             bin_value = self.singlePointMutation(bin_value, pm)
             # split the result into 2 equal size arrays
             bin_value1, bin_value2 = np.split(bin_value, 2)
@@ -200,6 +211,8 @@ class operations:
 
             # create a new 2d vector as a tuple
             vector2d = (dv1, dv2)
+
+            # pass the new vactor to the list of the new design vectors
             new_design_vectors[k] = vector2d
 
         # create a new population from the new design vector list
