@@ -13,7 +13,8 @@ print("---------------------POPULATION 1: ---------------------")
 op.print()
 i = 0
 afv = op.averageOfFvals
-while i < 1000 and afv < 0.96:
+max_iterations = 1000
+while i < max_iterations and afv < 0.96:
     new_pop = op.calculateNewPopulation(op.mates, 0.05, 0.95)
     op = operations(new_pop)
     txt = "---------------------POPULATION {pop_no:d}: ---------------------".format(pop_no = i + 2)
