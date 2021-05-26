@@ -53,7 +53,17 @@ def Calc_prob(mylist,summ):
         list2.append(y)
     return list2    
 
-
+#this function is doing the Crossover Operation.At first there is a list(passing list)  with all the members that pass to the 
+#next generation from the beggining.The reproduction list in which there are the elements that will go for crossover and an 
+#offspring list which will be the list that will be returned with the new generation after crossover.There is a default 
+#crossover probability and for every member there is a random number from 0 to 1 .If the random number<=prob of crossover then 
+#the member goes for reproduction else it goes immediately to the next generation.if the length of the reproduction list is 1 then the
+#next generation is the same because a member can not crossover on its own.If the length in reproduction list is odd then pass the last member
+#to the next generation because it cant crossover and remove it from the reproduction list.
+#then for crossover I use this algorithm:a. Select 2 parents: G1, G2
+#b. generate uniformly distributed random number gamma from [-alpha, 1 + alpha], where alpha = 0.5
+#c. generate an offspring as follows: G = gamma * G1 + (1 - gamma) * G2 twice for every two elements list in the reproduction list
+# and the new members are added to offspring list.Finally the returned list is offspring list+passinglist. 
 def Crossover(mylist,pc):
     passing_list=[]
     reproduction_list=[]
@@ -101,9 +111,11 @@ def Mutation(mylist,possibility_of_mutation):
                 mylist[x][y+1]=temp
                 break
     return mylist
+     
 
 pop_size=3
 list1=[]
+#initialize a population of 300 members
 for x in range(300):
     list1.append(list(Population(pop_size)))
 
@@ -119,6 +131,8 @@ while i<=100:
     list2=Calc_prob(list1,summ)
     ex1=Reproduction()
     list3=ex1.Calc_Cumulative_prob(list2)
+    #for every member creates a random variable from 0 to 1 and if this number is <=
+    # from the cumulative prob then it goes to the mating pool 
     for x in range(300):
         position=0
         r=random.uniform(0.0,1.0)
@@ -135,8 +149,6 @@ while i<=100:
     for x in list5:
         ex=Reproduction()
         sum=sum+ex.Fitness_function(x[0],x[1],x[2])/len(list5)
-    
-    
     print(f"average fitness function of {i} iteration is {sum}")    
     i=i+1
     list1.clear()
