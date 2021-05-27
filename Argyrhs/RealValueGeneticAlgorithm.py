@@ -7,9 +7,11 @@ class Reproduction:
     def Fitness_function(self,x,y,z):
         self.k=1/(1+Objective_function(x,y,z))
         return self.k
+    #this function calculates the calculative probability    
     def Calc_probability(self,x,sum):
         self.p=x/sum
-        return self.p   
+        return self.p
+    #this function calculates the cumulative probability       
     def Calc_Cumulative_prob(self,mylist):
         self.newlist=[]
         self.position=1
@@ -22,7 +24,7 @@ class Reproduction:
         return self.newlist     
 
 
-#Function creating population
+#Function creating random members of population of given size where it's gene is a number from 0.0 to 9.9  
 def Population(size):
     des_vector=random.randint(0,999,size=(size))/100.00
     return des_vector
@@ -34,6 +36,7 @@ def Objective_function(x,y,z):
     objective=x**2+y**2+z**2
     return objective
 
+#this function calculates the sum of fitness function of every member of the population
 def Calc_sum(mylist):
     sum=0
     for x in mylist:
@@ -41,6 +44,7 @@ def Calc_sum(mylist):
         sum=sum+ex.Fitness_function(x[0],x[1],x[2])
     return sum
 
+#this function calculates the calculative probability of every member from the type with the type (fitness(i)/sum of all fitness(i))
 def Calc_prob(mylist,summ):
     list2=[]
     for x in mylist:
@@ -49,22 +53,17 @@ def Calc_prob(mylist,summ):
         list2.append(y)
     return list2    
 
-def percent_50_choice(reproduction_list,offspring_least):
-    if len(reproduction_list)>1:
-        for x in range(0,len(reproduction_list)-1,2):
-            new_row=[]
-            for y in range(3):
-                r1=random.uniform(0.0,1.0)
-                r2=random.uniform(0.0,1.0)
-                if r1>r2:
-                    k=reproduction_list[x][y]
-                else:
-                    k=reproduction_list[x+1][y]
-                new_row.append(k)
-            offspring_least.append(new_row)
-    return offspring_least
-
-
+#this function is doing the Crossover Operation.At first there is a list(passing list)  with all the members that pass to the 
+#next generation from the beggining.The reproduction list in which there are the elements that will go for crossover and an 
+#offspring list which will be the list that will be returned with the new generation after crossover.There is a default 
+#crossover probability and for every member there is a random number from 0 to 1 .If the random number<=prob of crossover then 
+#the member goes for reproduction else it goes immediately to the next generation.if the length of the reproduction list is 1 then the
+#next generation is the same because a member can not crossover on its own.If the length in reproduction list is odd then pass the last member
+#to the next generation because it cant crossover and remove it from the reproduction list.
+#then for crossover I use this algorithm:a. Select 2 parents: G1, G2
+#b. generate uniformly distributed random number gamma from [-alpha, 1 + alpha], where alpha = 0.5
+#c. generate an offspring as follows: G = gamma * G1 + (1 - gamma) * G2 twice for every two elements list in the reproduction list
+# and the new members are added to offspring list.Finally the returned list is offspring list+passinglist. 
 def Crossover(mylist,pc):
     passing_list=[]
     reproduction_list=[]
@@ -74,16 +73,13 @@ def Crossover(mylist,pc):
         if r<=pc:
             reproduction_list.append(x)
         else:
-            passing_list.append(x)
-    #print(f"reproduction list:{reproduction_list}")
-    #print(f"passing:{passing_list}")        
+            passing_list.append(x)       
     if len(reproduction_list)==1:
         offspring_list=mylist.copy()
         return offspring_list        
     if len(reproduction_list)%2==1:
         offspring_list.append(reproduction_list[-1])
         reproduction_list.remove(reproduction_list[-1])
-    
     r=random.uniform(0.0,1.0)
     for i in range(2):
         for x in range(0,len(reproduction_list),2):
@@ -96,8 +92,9 @@ def Crossover(mylist,pc):
     offspring_list=offspring_list+passing_list
     return offspring_list                         
 
-
-
+#this function is doing Mutation through swapping.Given a default possibillity of Mutation each member
+#has its own random possibility to mutate,so if a member's gene has possibility to mutate<= from the default
+#mutation possibility then it swaps the gene with next one if there is one else if the gene is the last then swapp the gene with its previous
 
 def Mutation(mylist,possibility_of_mutation):
     for x in range(len(mylist)):
@@ -114,38 +111,28 @@ def Mutation(mylist,possibility_of_mutation):
                 mylist[x][y+1]=temp
                 break
     return mylist
-
-#def Mutation(mylist,possibility_of_mutation):
-    #for x in range(len(mylist)): 
-        #r=random.uniform(0.0,1.0)
-        #for y in range(3):
-            #if r<=possibility_of_mutation:
-                #new_random=round(random.uniform(0.0,9.9),2)
-                #mylist[x][y]=new_random
-    #return mylist            
-
+     
 
 pop_size=3
 list1=[]
-
+#initialize a population of 300 members
 for x in range(300):
     list1.append(list(Population(pop_size)))
 
-# print(f"basic population:{list1}")
 i=0
 while i<=100:
     summ=Calc_sum(list1)
     
     list2=[]
-    list2=Calc_prob(list1,summ)
-    # print(f"calc probability:{list2}")
     list3=[]
+    list4=[]
+    list5=[]
+    list6=[]
+    list2=Calc_prob(list1,summ)
     ex1=Reproduction()
     list3=ex1.Calc_Cumulative_prob(list2)
-
-    #print(f"cumlative einai:{list3}")
-
-    list4=[]
+    #for every member creates a random variable from 0 to 1 and if this number is <=
+    # from the cumulative prob then it goes to the mating pool 
     for x in range(300):
         position=0
         r=random.uniform(0.0,1.0)
@@ -154,33 +141,17 @@ while i<=100:
                 list4.append(list1[position])
                 break
             position=position+1     
-
-    #print(f" this is:{list4}")
-    #print("\n")
-    #new_list4=list4[:]
-    list6=[]
     list6=Crossover(list4,0.80)
 
-    #print(f"crossover {list6}")
-    #print("\n")
-    list5=[]
     mutation_poss=random.uniform(0.0,1.0)
     list5=Mutation(list6,0.20)
     sum=0
     for x in list5:
-        #print(x)
         ex=Reproduction()
         sum=sum+ex.Fitness_function(x[0],x[1],x[2])/len(list5)
-    #print("\n")
-    
     print(f"average fitness function of {i} iteration is {sum}")    
-    #print(f"mutation:{list5}")
-    #print("\n")
     i=i+1
-    #print(list5)
-    
     list1.clear()
-    #print(list1)
     list1=list5.copy()
     
 
