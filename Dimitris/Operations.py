@@ -1,3 +1,4 @@
+from warnings import simplefilter
 import numpy as np
 import random
 from DesignVariable import designVec
@@ -26,44 +27,39 @@ class operations:
         
         self.n = population.pop_size
 
-        self.fitness_values = self.evaluate()
-        self.sum_of_fvalues = self.calculateSumOfFvals()
+        self.fitness_values = self.evaluate(self.designVectors)
+        self.sum_of_fvalues = sum(self.fitness_values)
         self.averageOfFvals = self.sum_of_fvalues * (1 / self.n)
 
-        self.probabilities_of_selection = self.findProbabilitiesOfSelection()
-        self.cummulative_probabilities = self.findCummulativeProbabilities()
+        self.probabilities_of_selection = self.findProbabilitiesOfSelection(self.fitness_values, self.sum_of_fvalues)
+        self.cummulative_probabilities = self.findCummulativeProbabilities(self.probabilities_of_selection)
 
         self.mates, self.matesNo = self.findMates(self.designVectors, self.cummulative_probabilities)
 
-    def evaluate(self):
+
+    def evaluate(self, vectors):
         eval_value = []
-        for vector2d in self.population.all_design_vectors:
+        for vector2d in vectors:
             # find the fitness value F(x) = 1 / (1 + f(x))
-            fitness_value = 1 / (1 + sphere(vector2d[0].value_dec, vector2d[1].value_dec)) 
+            fitness_value = 1 / (1 + ackley(vector2d[0].value_dec, vector2d[1].value_dec)) 
             eval_value.append(fitness_value)
         return eval_value
     
-    def calculateSumOfFvals(self):
-        sum = 0
-        for fv in self.fitness_values:
-            sum += fv
-        return sum
-
-    def findProbabilitiesOfSelection(self):
+    def findProbabilitiesOfSelection(self, fitness_values, sum):
         pos = []
-        for fv in self.fitness_values:
-            p = fv / self.sum_of_fvalues
+        for fv in fitness_values:
+            p = fv / sum
             pos.append(p)
         return pos
 
-    def findCummulativeProbabilities(self):
+    def findCummulativeProbabilities(self, probabilities):
         cumProb = []
-        current_sum = self.probabilities_of_selection[0]
+        current_sum = probabilities[0]
         cumProb.append(current_sum)
 
-        length = len(self.probabilities_of_selection)
+        length = len(probabilities)
         for i in range(1, length):
-            current_sum += self.probabilities_of_selection[i]
+            current_sum += probabilities[i]
             cumProb.append(current_sum)
             
         return cumProb
@@ -86,7 +82,7 @@ class operations:
 
         return selectedMates, selectedMatesIndex
 
-    # calcultae the mutation on the given binary string with probability of mutation pm
+    # calculate the mutation on the given binary string with probability of mutation pm
     def singlePointMutation(self, bin_value, pm):
         
         prob_mutation_sucess = random.uniform(0, 1)
@@ -155,8 +151,6 @@ class operations:
             # below is a series of concatenations and splits for the crossover to 
             # be calculated, given that the two parents are found
             if parent1_found and parent2_found:
-                p1valb0 = parent1[0].value_bin
-                p1valb1 = parent1[1].value_bin
                 bin_array1 = np.concatenate((parent1[0].value_bin, parent1[1].value_bin), axis = None)
                 bin_array2 = np.concatenate((parent2[0].value_bin, parent2[1].value_bin), axis = None)
 
@@ -241,4 +235,51 @@ class operations:
         #     print(self.mates[i][0].printDesignVector())
         #     print(self.mates[i][1].printDesignVector())
 
+    def check_convergence(self, values, limit):
 
+        #Checking the convergence of a list of values in comparison to a limit.
+
+        """
+
+        :param values: list of values, corresponding to fitness, variables of position ,or a characteristic   
+
+        :param sd: standard deviation
+
+        :return: boolean whether the criterion is met or not, criterion : stander var. <= a set limit
+
+        """
+
+        flag = False
+
+        n = len(values)
+
+        mean = sum(values) / n
+
+        diff = [i - mean for i in values]
+
+        diff_2 = [x ** 2 for x in diff]
+
+        my_sum = sum(diff_2)
+
+        variance = my_sum / n
+
+        sd = np.sqrt(variance)
+
+        if (sd <= limit):
+
+            flag = True
+
+        return flag
+
+    def check_convergence_for_all(self, limit):
+        # values is a list of 2d vectors
+        values = self.designVectors
+        l1 = []
+        l2 = []
+        for i in range(len(values)):
+            l1.append(values[i][0].value_dec)
+            l2.append(values[i][1].value_dec)
+        if self.check_convergence(l1, limit) and self.check_convergence(l2, limit):
+            return True
+        return False
+        
