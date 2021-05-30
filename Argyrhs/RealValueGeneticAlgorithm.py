@@ -24,16 +24,33 @@ class Reproduction:
         return self.newlist     
 
 
-#Function creating random members of population of given size where it's gene is a number from 0.0 to 9.9  
+#Function creating random members of population of given size where it's gene is a number from -5.12 to 5,12 for RASTRIGIN FUNCTION
+#def Population(size):
+#    des_vector=random.randint(-512,512,size=(size))/100.0
+#    return des_vector
+
+#Function creating random members of population of given size where it's gene is a number from -2.00 to 2.00 for SPHERE FUNCTION
 def Population(size):
-    des_vector=random.randint(0,999,size=(size))/100.00
+    des_vector=random.randint(-20000,20000,size=(size))/100.00
     return des_vector
+
+
+#Function creating random members of population of given size where its's gene is a number from -2.048 to 2.048 for ROSENBROCK FUNCTION
+#def Population(size):
+#    des_vector=random.randint(-2048,2048,size=(size))/1000.0
+#    return des_vector
 
 #the objective function
 
 def Objective_function(x,y,z):
+    #raistrigin function
     #objective=30+x**2-10*cos(2*math.pi*x)+y**2-10*cos(2*math.pi*y)+z**2-10*cos(2*math.pi*z)
+
+    #sphere function
     objective=x**2+y**2+z**2
+
+    #rosenbrock function
+    #objective=100*((y-(x**2))**2)+((1-x)**2)+100*((z-(y**2))**2)+((1-y)**2)
     return objective
 
 #this function calculates the sum of fitness function of every member of the population
@@ -52,6 +69,26 @@ def Calc_prob(mylist,summ):
         y=ex.Calc_probability(ex.Fitness_function(x[0],x[1],x[2]),summ)
         list2.append(y)
     return list2    
+
+#this function calculates the sum of every list given as parameter.It is used in the calculation of the convergence criterion.
+def sum_list(mylist):
+    sum=0
+    for x in mylist:
+        sum=sum+x
+    return sum    
+#this function calculates the convergence criterion
+def check_convergence(mylist,limit):
+    flag=False
+    n=len(mylist)
+    mean=sum_list(mylist)/n
+    diff=[i-mean for i in mylist]
+    diff_2=[x**2 for x in diff]
+    my_sum=sum_list(diff_2)
+    variance=my_sum/n
+    sd=math.sqrt(variance)
+    if sd<=limit:
+        flag=True
+    return flag    
 
 #this function is doing the Crossover Operation.At first there is a list(passing list)  with all the members that pass to the 
 #next generation from the beggining.The reproduction list in which there are the elements that will go for crossover and an 
@@ -98,8 +135,8 @@ def Crossover(mylist,pc):
 
 def Mutation(mylist,possibility_of_mutation):
     for x in range(len(mylist)):
-        r=random.uniform(0.0,1.0)
         for y in range(len(mylist[x])):
+            r=random.uniform(0.0,1.0)
             if r<=possibility_of_mutation and y!=0:
                 temp=mylist[x][y]
                 mylist[x][y]=mylist[x][y-1]
@@ -112,15 +149,26 @@ def Mutation(mylist,possibility_of_mutation):
                 break
     return mylist
      
-
-pop_size=3
+probability_of_crossover=0.9
+probability_of_mutation=0.1
+size=3
 list1=[]
 #initialize a population of 300 members
 for x in range(300):
-    list1.append(list(Population(pop_size)))
-
+    list1.append(list(Population(size)))
+firstpop=list1.copy()    
+counter=0
+print("POPULATION1 IS:")    
+for x in list1:
+    print(f"x value of first population is:{x[0]}")
+    print(f"y value of first population is:{x[1]}")
+    print(f"z value of population is:{x[1]}")
+    print("\n")
+    counter=counter+1
+    if counter==5:
+        break
 i=0
-while i<=100:
+while i<400:
     summ=Calc_sum(list1)
     
     list2=[]
@@ -141,17 +189,42 @@ while i<=100:
                 list4.append(list1[position])
                 break
             position=position+1     
-    list6=Crossover(list4,0.80)
+    list6=Crossover(list4,probability_of_crossover)
 
     mutation_poss=random.uniform(0.0,1.0)
-    list5=Mutation(list6,0.20)
+    list5=Mutation(list6,probability_of_mutation)
     sum=0
+    #this loop calculates the average fitness function of every generation
     for x in list5:
         ex=Reproduction()
         sum=sum+ex.Fitness_function(x[0],x[1],x[2])/len(list5)
-    print(f"average fitness function of {i} iteration is {sum}")    
+    print(f"Average fitness of {i} iteration is:{sum}")
+    #in this point mylist1 will contain all the x elements,mylist2 will contain all the y elements and mylist3 will contain all the z elements of the 300
+    # members of the population of every generation.Those lists will be given as parameters in the check_corvegence function with the limit 0.01
+    # When all three functions return true then the loop breaks before the iterations reach the default 400 and the algorithm finishes.Then the 
+    # last population is printed.    
+    mylist1=[]
+    mylist2=[]
+    mylist3=[]
+    for x in list5:
+        mylist1.append(x[0])
+        mylist2.append(x[1])
+        mylist3.append(x[2])
+    convergence_limit=0.01    
+    if check_convergence(mylist1,convergence_limit) and check_convergence(mylist2,convergence_limit) and check_convergence(mylist3,convergence_limit):   
+        break
     i=i+1
     list1.clear()
     list1=list5.copy()
+counter=0    
+print("LAST POPULATION1 IS:")    
     
-
+for x in list5:
+    print(f"x value of lastpopulation is:{x[0]}")
+    print(f"y value of last population is:{x[1]}")
+    print(f"z value of last population is is:{x[1]}")
+    print("\n")
+    counter=counter+1
+    if counter==5:
+        break
+print(f"over in {i} iteration") 
