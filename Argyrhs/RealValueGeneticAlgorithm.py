@@ -25,29 +25,29 @@ class Reproduction:
 
 
 #Function creating random members of population of given size where it's gene is a number from -5.12 to 5,12 for RASTRIGIN FUNCTION
-#def Population(size):
-#    des_vector=random.randint(-512,512,size=(size))/100.0
-#    return des_vector
-
-#Function creating random members of population of given size where it's gene is a number from -2.00 to 2.00 for SPHERE FUNCTION
 def Population(size):
-    des_vector=random.randint(-20000,20000,size=(size))/100.00
+    des_vector=random.randint(-512,512,size=(size))/100.0
     return des_vector
 
-
-#Function creating random members of population of given size where its's gene is a number from -2.048 to 2.048 for ROSENBROCK FUNCTION
+#Function creating random members of population of given size where it's gene is a number from -2.00 to 2.00 for SPHERE FUNCTION
 #def Population(size):
-#    des_vector=random.randint(-2048,2048,size=(size))/1000.0
+#    des_vector=random.randint(-20000,20000,size=(size))/100.00
+#    return des_vector
+
+
+#Function creating random members of population of given size where its's gene is a number from -5.00 το 10.00 for ROSENBROCK FUNCTION
+#def Population(size):
+#    des_vector=random.uniform(-5.00,10.00,size=(size))
 #    return des_vector
 
 #the objective function
 
 def Objective_function(x,y,z):
     #raistrigin function
-    #objective=30+x**2-10*cos(2*math.pi*x)+y**2-10*cos(2*math.pi*y)+z**2-10*cos(2*math.pi*z)
+    objective=30+x**2-10*cos(2*math.pi*x)+y**2-10*cos(2*math.pi*y)+z**2-10*cos(2*math.pi*z)
 
     #sphere function
-    objective=x**2+y**2+z**2
+    #objective=x**2+y**2+z**2
 
     #rosenbrock function
     #objective=100*((y-(x**2))**2)+((1-x)**2)+100*((z-(y**2))**2)+((1-y)**2)
@@ -103,27 +103,27 @@ def check_convergence(mylist,limit):
 # and the new members are added to offspring list.Finally the returned list is offspring list+passinglist. 
 def Crossover(mylist,pc):
     passing_list=[]
-    reproduction_list=[]
+    crossover_list=[]
     offspring_list=[]
     for x in mylist:
         r=random.uniform(0.0,1.0)
         if r<=pc:
-            reproduction_list.append(x)
+            crossover_list.append(x)
         else:
             passing_list.append(x)       
-    if len(reproduction_list)==1:
+    if len(crossover_list)==1:
         offspring_list=mylist.copy()
         return offspring_list        
-    if len(reproduction_list)%2==1:
-        offspring_list.append(reproduction_list[-1])
-        reproduction_list.remove(reproduction_list[-1])
+    if len(crossover_list)%2==1:
+        offspring_list.append(crossover_list[-1])
+        crossover_list.remove(crossover_list[-1])
     r=random.uniform(0.0,1.0)
     for i in range(2):
-        for x in range(0,len(reproduction_list),2):
+        for x in range(0,len(crossover_list),2):
             new_list=[]
             for y in range(3):
                 gamma=random.uniform(-0.5,1.5)
-                new_list.append(round(gamma*reproduction_list[x][y]+(1-gamma)*reproduction_list[x+1][y],2))
+                new_list.append(round(gamma*crossover_list[x][y]+(1-gamma)*crossover_list[x+1][y],2))
             #print(new_list)
             offspring_list.append(new_list)
     offspring_list=offspring_list+passing_list
@@ -210,7 +210,7 @@ while i<400:
         mylist1.append(x[0])
         mylist2.append(x[1])
         mylist3.append(x[2])
-    convergence_limit=0.01    
+    convergence_limit=0.0005    
     if check_convergence(mylist1,convergence_limit) and check_convergence(mylist2,convergence_limit) and check_convergence(mylist3,convergence_limit):   
         break
     i=i+1
