@@ -34,7 +34,7 @@ class population:
             print("no.", counter)
             # dv.printDesignVector()
             counter += 1
-            print("dv1:")
+            print("x:")
             vector2d[0].printDesignVector()
-            print("dv2:")
+            print("y:")
             vector2d[1].printDesignVector()
