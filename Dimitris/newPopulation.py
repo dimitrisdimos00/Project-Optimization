@@ -7,16 +7,16 @@ class population:
         self.x_array = [None] * size
         self.y_array = [None] * size
         #self.dx = dx
-        current_size = 0
         x_min = central_point[0] - radius
         x_max = central_point[0] + radius
         y_min = central_point[1] - radius
         y_max = central_point[1] + radius
-        while (current_size <= size):
+        current_size = 0
+        while (current_size < size):
             x = np.random.randint(x_min, x_max)
             y = np.random.randint(y_min, y_max)
-            distance = np.sqrt((central_point[0] - x)**2 + (central_point[1] - y)**2)
-            if (distance <= radius):
+            d = np.sqrt((central_point[0] - x)**2 + (central_point[1] - y)**2)
+            if (d <= radius):
                 self.x_array[current_size] = x
                 self.y_array[current_size] = y
                 current_size +=1
