@@ -3,18 +3,27 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import newPopulation
 
+# rastrigin search domain: -5.12 <= x, y <= 5.12
 def rastrigin(x, y):
     return 20 + x**2 - 10*np.cos(2*np.pi*x) + y**2 - 10*np.cos(2*np.pi*y)
+# ackley search domain: -5 <= x, y <= 5
+def ackley(x, y):
+    return -20 * np.exp( -0.2 * np.sqrt( 0.5 * (x ** 2 + y ** 2))) - np.exp( 0.5 * (np.cos(2 * np.pi * x) + np.cos(2 * np.pi * y))) + np.exp(1) + 20
 # sphere search domain: -inf <= xi <= +inf
 def sphere(x, y):
     return x**2 + y**2
+
 cp = (0,0)
-r = 20
-size = 50
+r = 4
+size = 300
 p = newPopulation.population(size, cp, r, rastrigin)
-for i in range(200):
+iterations = 0
+while(not p.converges(0.005) and max(p.fitness_values) < 0.9999):
     p.print()
-    p.recreate(0.95)
+    p.recreate(0.95, 0.15)
+    iterations+= 1
+p.print()
+print(iterations, "iterations")
 
 # values = [None] * p.size
 # x_array = [None] * p.size

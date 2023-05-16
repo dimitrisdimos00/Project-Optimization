@@ -2,11 +2,10 @@ import numpy as np
 import random
 
 class population:
-    def __init__(self, size, central_point, radius, function):
-    #, dx):
+    def __init__(self, size, central_point, radius, function, mode="min"):
         self.size = size
         self.function = function
-        #self.dx = dx
+        self.mode = mode
         x_min = central_point[0] - radius
         x_max = central_point[0] + radius
         y_min = central_point[1] - radius
@@ -20,16 +19,23 @@ class population:
             if (d <= radius):
                 self.population.append((x, y))
                 current_size +=1
-        
+
+        self.fitness_values = [None] * self.size
+        self.average = 0
         self.evaluate()
 
     def evaluate(self):
-        self.fitness_values = [None] * self.size
-        for i in range(self.size):
-            self.fitness_values[i] = (1 / (1 + self.function(self.population[i][0], self.population[i][1])))
+        if(self.mode == "min"):
+            # find the fitness value F(x) = 1 / (1 + f(x)) for minimum
+            for i in range(self.size):
+                self.fitness_values[i] = (1 / (1 + self.function(self.population[i][0], self.population[i][1])))
+        else:
+            # find the fitness value F(x) = f(x) for maximum
+            for i in range(self.size):
+                self.fitness_values[i] = self.function(self.population[i][0], self.population[i][1])
         self.average = sum(self.fitness_values) / self.size
 
-    def recreate(self, crossover_probability):
+    def recreate(self, crossover_probability, mutation_probability):
         def crossover(g1, g2, alpha=0.5):
             # g1_chance = random.uniform(0,1)
             # if (g1_chance > 0.5):
@@ -60,6 +66,8 @@ class population:
             mates[j] = self.population[index]
 
         new_population = mates.copy()
+
+        # crossovers
         parent1 = parent2 = False
         parent1_index = parent2_index = 0
         for i in range(n):
@@ -75,11 +83,32 @@ class population:
                     offspring2 = (crossover(mates[parent1_index][0], mates[parent2_index][0]), crossover(mates[parent1_index][1], mates[parent2_index][1]))
                     new_population[parent1_index] = offspring1
                     new_population[parent2_index] = offspring2
-                    parent1 = parent2 = False   
+                    parent1 = parent2 = False
+        
+        # mutations
+        for i in range(n):
+            if random.uniform(0, 1) <= mutation_probability:
+                m = (new_population[i][1], new_population[i][0])
+                new_population[i] = m
         
         self.population = new_population
         self.evaluate()
     
+    def converges(self, limit):
+        def standard_deviation(values):
+            n = len(values)
+            mean = sum(values) / n
+            diff = [i - mean for i in values]
+            diff_2 = [x ** 2 for x in diff]
+            my_sum = sum(diff_2)
+            return np.sqrt(my_sum / n)
+        
+        x_array = self.population[:][0]
+        y_array = self.population[:][1]
+        if standard_deviation(x_array) <= limit and standard_deviation(y_array) <= limit:
+            return True
+        return False
+
     def print(self):
         # for i in range(self.size):
             # print("no.", i + 1, self.population[i])
