@@ -2,9 +2,10 @@ import numpy as np
 import random
 
 class population:
-    def __init__(self, size, central_point, radius):
+    def __init__(self, size, central_point, radius, function):
     #, dx):
         self.size = size
+        self.function = function
         #self.dx = dx
         x_min = central_point[0] - radius
         x_max = central_point[0] + radius
@@ -20,21 +21,27 @@ class population:
                 self.population.append((x, y))
                 current_size +=1
         
-    def crossover(g1, g2, alpha):
-        gamma = random.uniform(-alpha, 1 + alpha)
-        return round((gamma * g1 + (1 - gamma) * g2), 4)
-    
-    def recreate(self, function, crossover_probability):
+        self.evaluate()
+
+    def evaluate(self):
+        self.fitness_values = [None] * self.size
+        for i in range(self.size):
+            self.fitness_values[i] = (1 / (1 + self.function(self.population[i][0], self.population[i][1])))
+        self.average = sum(self.fitness_values) / self.size
+
+    def recreate(self, crossover_probability):
+        def crossover(g1, g2, alpha=0.5):
+            # g1_chance = random.uniform(0,1)
+            # if (g1_chance > 0.5):
+            #     return g1
+            # return g2
+            gamma = random.uniform(-alpha, 1 + alpha)
+            return gamma * g1 + (1 - gamma) * g2
         n = self.size
-        
-        fitness_values = [None] * n
-        for i in range(n):
-            fitness_values[i] = (1 / (1 + function(self.population[i][0], self.population[i][1])))
-        
         selection_probability = [None] * n
-        value_sum = sum(fitness_values)
+        value_sum = sum(self.fitness_values)
         for i in range(n):
-            selection_probability[i] = fitness_values[i] / value_sum
+            selection_probability[i] = self.fitness_values[i] / value_sum
         
         cummulative_probability = [None] * n
         prob_sum = selection_probability[0]
@@ -64,20 +71,21 @@ class population:
                     parent2_index = i
                     parent2 = True
                 else:
-                    offspring1 = self.crossover(mates[parent1_index], mates[parent2_index], 0.5)
-                    offspring2 = self.crossover(mates[parent1_index], mates[parent2_index], 0.5)
+                    offspring1 = (crossover(mates[parent1_index][0], mates[parent2_index][0]), crossover(mates[parent1_index][1], mates[parent2_index][1]))
+                    offspring2 = (crossover(mates[parent1_index][0], mates[parent2_index][0]), crossover(mates[parent1_index][1], mates[parent2_index][1]))
                     new_population[parent1_index] = offspring1
                     new_population[parent2_index] = offspring2
-                    parent1 = parent2 = False      
-
-    # def setPopulation(self, x_array, y_array):
-    #     self.x_array = x_array
-    #     self.y_array = y_array
-    #     self.size = len(x_array)
-
+                    parent1 = parent2 = False   
+        
+        self.population = new_population
+        self.evaluate()
+    
     def print(self):
-        for i in range(0, self.size):
-            print("\n")
-            print("no.", i + 1)
-            print("x:", self.x_array[i])
-            print("y:", self.y_array[i])
+        # for i in range(self.size):
+            # print("no.", i + 1, self.population[i])
+            # print(self.population[i])
+        fvmin = min(self.fitness_values)
+        fvmax = max(self.fitness_values)
+        indmax = self.fitness_values.index(fvmax)
+        indmin = self.fitness_values.index(fvmin)
+        print("average:", self.average, self.population[indmax], "fvalue:", fvmax)

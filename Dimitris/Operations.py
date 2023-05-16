@@ -236,39 +236,26 @@ class operations:
         #     print(self.mates[i][1].printDesignVector())
 
     def check_convergence(self, values, limit):
-
+        
         #Checking the convergence of a list of values in comparison to a limit.
-
         """
-
         :param values: list of values, corresponding to fitness, variables of position ,or a characteristic   
 
         :param sd: standard deviation
 
         :return: boolean whether the criterion is met or not, criterion : stander var. <= a set limit
-
         """
 
         flag = False
-
         n = len(values)
-
         mean = sum(values) / n
-
         diff = [i - mean for i in values]
-
         diff_2 = [x ** 2 for x in diff]
-
         my_sum = sum(diff_2)
-
         variance = my_sum / n
-
         sd = np.sqrt(variance)
-
         if (sd <= limit):
-
             flag = True
-
         return flag
 
     def check_convergence_for_all(self, limit):
