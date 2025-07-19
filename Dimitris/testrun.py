@@ -1,46 +1,73 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
+import numpy
+import matplotlib.pyplot as pyplot
 import newPopulation
 
-# rastrigin search domain: -5.12 <= x, y <= 5.12
-def rastrigin(x, y):
-    return 20 + x**2 - 10*np.cos(2*np.pi*x) + y**2 - 10*np.cos(2*np.pi*y)
-# ackley search domain: -5 <= x, y <= 5
-def ackley(x, y):
-    return -20 * np.exp( -0.2 * np.sqrt( 0.5 * (x ** 2 + y ** 2))) - np.exp( 0.5 * (np.cos(2 * np.pi * x) + np.cos(2 * np.pi * y))) + np.exp(1) + 20
-# sphere search domain: -inf <= xi <= +inf
-def sphere(x, y):
-    return x**2 + y**2
+# Rastrigin search domain: -5.12 <= x, y <= 5.12
 
-cp = (0,0)
-r = 4
-size = 300
-p = newPopulation.population(size, cp, r, rastrigin)
+def rastrigin(x, y):
+    return 20 + x ** 2 - 10 * numpy.cos(2 * numpy.pi * x) + y ** 2 - 10 * numpy.cos(2 * numpy.pi * y)
+
+# Ackley search domain: -5 <= x, y <= 5
+
+def ackley(x, y):
+    return -20 * numpy.exp( -0.2 * numpy.sqrt( 0.5 * (x ** 2 + y ** 2))) - numpy.exp( 0.5 * (numpy.cos(2 * numpy.pi * x) + numpy.cos(2 * numpy.pi * y))) + numpy.exp(1) + 20
+
+# Sphere search domain: -inf <= xi <= +inf
+
+def sphere(x, y):
+    return x ** 2 + y ** 2
+
+# --- Configuration ---
+
+# objective_function = rastrigin
+# function_name = "Rastrigin"
+# domain = (-5.12, 5.12)
+
+# objective_function = ackley
+# function_name = "Ackley"
+# domain = (-5, 5)
+
+objective_function = sphere
+function_name = "Sphere"
+domain = (1, 1)
+
+population = newPopulation.population(size=300, central_point=(0,0), 
+    radius=300, function=objective_function)
+
 iterations = 0
-while(not p.converges(0.005) and max(p.fitness_values) < 0.9999):
-    p.print()
-    p.recreate(0.95, 0.15)
-    iterations+= 1
-p.print()
+while(not population.converges(limit=0.005) 
+    and max(population.fitness_values) < 0.9999):
+
+    population.print()
+    population.recreate(crossover_probability=0.95, mutation_probability=0.15)
+    iterations += 1
+
+population.print()
 print(iterations, "iterations")
 
-# values = [None] * p.size
-# x_array = [None] * p.size
-# y_array = [None] * p.size
+# Extract the final population's coordinates and their fitness values
+x_coords = [ind[0] for ind in population.population]
+y_coords = [ind[1] for ind in population.population]
+z_coords = [objective_function(x, y) for x, y in population.population]
 
-# for j in range(4):
-#     for i in range(p.size):
-#         x_array[i] = p.population[i][0]
-#         y_array[i] = p.population[i][1]
-#         values[i] = rastrigin(x_array[i], y_array[i])
+# Create the 3D plot
+figure = pyplot.figure(figsize=(12, 8)).add_subplot(projection='3d')
 
-# ax = plt.figure().add_subplot(projection='3d')
-#     # ax.scatter(x_array, y_array, values)
-# a = np.linspace(-5.12, 5.12, num=50)
-# b = np.linspace(-5.12, 5.12, num=50)
-# X, Y = np.meshgrid(a, b)
-# Z = sphere(X, Y)
-# ax.plot_wireframe(X, Y, Z, rstride=1, cstride=1, color="red")
-    # p.recreate(0.9)
-# plt.show()
+# Plot the surface of the Rastrigin function
+a = numpy.linspace(domain[0], domain[1], num=50)
+b = numpy.linspace(domain[0], domain[1], num=50)
+
+X, Y = numpy.meshgrid(a, b)
+Z = objective_function(X, Y)
+
+figure.plot_surface(X, Y, Z, rstride=5, cstride=5, 
+    cmap='viridis', edgecolor='none', alpha=0.6)
+
+# Plot the final population as a scatter plot on the surface
+figure.scatter(x_coords, y_coords, z_coords, color='red', 
+    s=20, depthshade=True, label='Final Population')
+
+figure.set_title(f"Final Population on {function_name} Function Surface")
+
+pyplot.show()
+
