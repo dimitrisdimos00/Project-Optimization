@@ -1,6 +1,6 @@
 import numpy
 import matplotlib.pyplot as pyplot
-import newPopulation
+import Population
 
 # Rastrigin search domain: -5.12 <= x, y <= 5.12
 
@@ -19,30 +19,30 @@ def sphere(x, y):
 
 # --- Configuration ---
 
-# objective_function = rastrigin
-# function_name = "Rastrigin"
-# domain = (-5.12, 5.12)
+objective_function = rastrigin
+function_name = "Rastrigin"
+domain = (-5.12, 5.12)
 
 # objective_function = ackley
 # function_name = "Ackley"
 # domain = (-5, 5)
 
-objective_function = sphere
-function_name = "Sphere"
-domain = (1, 1)
+# objective_function = sphere
+# function_name = "Sphere"
+# domain = (1, 1)
 
-population = newPopulation.population(size=300, central_point=(0,0), 
+population = Population.Population(size=300, central_point=(0,0), 
     radius=300, function=objective_function)
 
 iterations = 0
 while(not population.converges(limit=0.005) 
     and max(population.fitness_values) < 0.9999):
 
-    population.print()
+    population.print_status()
     population.recreate(crossover_probability=0.95, mutation_probability=0.15)
     iterations += 1
 
-population.print()
+population.print_status()
 print(iterations, "iterations")
 
 # Extract the final population's coordinates and their fitness values
